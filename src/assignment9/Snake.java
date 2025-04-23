@@ -11,7 +11,11 @@ public class Snake {
 	private double deltaY;
 	
 	public Snake() {
-		//FIXME - set up the segments instance variable
+		segments = new LinkedList<>();
+		// Start snake in the center
+		double startX = 0.5;
+		double startY = 0.5;
+		segments.add(new BodySegment(startX, startY, SEGMENT_SIZE));
 		deltaX = 0;
 		deltaY = 0;
 	}
@@ -37,14 +41,32 @@ public class Snake {
 	 * based on the current direction of travel
 	 */
 	public void move() {
-		//FIXME
+		if (deltaX == 0 && deltaY == 0) return; // No movement yet
+
+		// Get head position
+		BodySegment head = segments.getFirst();
+		double newX = head.getX() + deltaX;
+		double newY = head.getY() + deltaY;
+
+		// Move body from tail to head
+		for (int i = segments.size() - 1; i > 0; i--) {
+			BodySegment prev = segments.get(i - 1);
+			segments.get(i).setX(prev.getX());
+			segments.get(i).setY(prev.getY());
+		}
+
+		// Update head position
+		head.setX(newX);
+		head.setY(newY);
 	}
 	
 	/**
 	 * Draws the snake by drawing each segment
 	 */
 	public void draw() {
-		//FIXME
+		for (BodySegment segment : segments) {
+			segment.draw();
+		}
 	}
 	
 	/**
@@ -53,7 +75,14 @@ public class Snake {
 	 * @return true if the snake successfully ate the food
 	 */
 	public boolean eatFood(Food f) {
-		//FIXME
+		BodySegment head = segments.getFirst();
+		double dist = Math.hypot(head.getX() - f.getX(), head.getY() - f.getY());
+		if (dist < SEGMENT_SIZE + Food.FOOD_SIZE) {
+			// Add new segment at the tail (copy tail position initially)
+			BodySegment tail = segments.getLast();
+			segments.add(new BodySegment(tail.getX(), tail.getY(), SEGMENT_SIZE));
+			return true;
+		}
 		return false;
 	}
 	
@@ -62,7 +91,11 @@ public class Snake {
 	 * @return whether or not the head is in the bounds of the window
 	 */
 	public boolean isInbounds() {
-		//FIXME
-		return true;
+		BodySegment head = segments.getFirst();
+		double x = head.getX();
+		double y = head.getY();
+		// Ensure entire segment is inside bounds
+		return (x >= SEGMENT_SIZE && x <= 1 - SEGMENT_SIZE &&
+				y >= SEGMENT_SIZE && y <= 1 - SEGMENT_SIZE);
 	}
 }
